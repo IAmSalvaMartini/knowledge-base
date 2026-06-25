@@ -3,7 +3,7 @@ goal: Build an LLM-Connected Org Knowledge Base for Tribal Knowledge Capture and
 version: 1.5
 date_created: 2026-06-25
 last_updated: 2026-06-26
-owner: IAmSalvaMartini / Release Engineering
+owner: IAmSalvaMartini
 status: 'Completed'
 tags: [feature, architecture, knowledge-base, rag, llm]
 ---
@@ -14,7 +14,7 @@ tags: [feature, architecture, knowledge-base, rag, llm]
 
 This plan defines the implementation of a centralized, LLM-connected knowledge base that captures undocumented "tribal" knowledge held by individual engineers and makes it searchable through natural-language questions. Engineers author content in a self-hosted Wiki.js instance; Wiki.js's native Git storage backend writes the content as Markdown to a Git repository; an ingestion pipeline chunks and embeds the content into a vector store; a retrieval service answers questions using Retrieval-Augmented Generation (RAG) with cited sources. Knowledge enters from two sources: Wiki.js pages (via the Git mirror) and an SSO-gated upload page where users submit documents (PDF/Word/Markdown/text) that are parsed and ingested. Users ask questions through a chat widget embedded directly in Wiki.js pages (plus a CLI). All authenticated access uses the organization's existing Entra ID (Azure AD) SSO over OIDC.
 
-The system root directory is `C:\knowledgebase`. The Python stack mirrors the existing the tool project (`C:\the tool`): Flask, requests, python-dotenv.
+The system root directory is `C:\knowledgebase`. Python stack: Flask, requests, python-dotenv.
 
 **Initial-version model strategy (cost-minimizing, EDP-compliant):** Generation uses the organization's existing **Anthropic enterprise** entitlement, which carries enterprise data-protection (no-training) terms and is free-to-team under the existing contract — keeping incremental cost near zero. To minimize cost and fully eliminate third-party data exposure for the embedding step, **embeddings run locally** via Ollama on-host; embedding text never leaves the machine. The model layer is provider-abstracted (PAT-002): the generation backend is selected by configuration, so an OpenAI-compatible or Copilot-style endpoint can be substituted later without code changes. Note: GitHub/M365 **Copilot does not expose a general chat-completions API** for custom applications, so it cannot serve as the KB generation backend directly; it is retained only as a future option behind the abstraction if/when an OpenAI-compatible endpoint is provisioned.
 
@@ -45,7 +45,7 @@ The system root directory is `C:\knowledgebase`. The Python stack mirrors the ex
 - **SEC-006**: Document upload is restricted to authenticated Entra ID users (REQ-012). Uploads enforce an allowlist of extensions (`.pdf`, `.docx`, `.md`, `.txt`), a max file size (`KB_MAX_UPLOAD_MB`, default 25), and content-type validation before parsing.
 - **SEC-007**: Uploaded files and parsed text contain internal content; they are stored under `data/uploads/` which is gitignored (covered by `data/`) and never published to the public framework repo.
 - **SEC-008**: `/api/ask` CORS is allowlisted to `KB_WIKIJS_BASE_URL` only (REQ-013); the endpoint requires a valid SSO session or service token.
-- **GUD-001**: Follow the existing the tool convention: Python performs all data fetching/file operations; the LLM performs only analysis/generation.
+- **GUD-001**: Python performs all data fetching/file operations; the LLM performs only analysis/generation.
 - **GUD-002**: All configuration values are read from environment variables with documented defaults; no hardcoded secrets or model IDs in source.
 - **PAT-001**: Module layout follows a service pattern: `ingest/`, `retrieval/`, `surfaces/`, `config.py`, `cli.py`, `app.py`.
 - **PAT-002**: Generation is accessed through a single `LLMProvider` interface (`generate(messages) -> str`) with concrete `AnthropicProvider` (initial) and a future `OpenAICompatibleProvider`; the active class is selected by `KB_LLM_PROVIDER`. No caller imports a vendor SDK directly.
@@ -100,7 +100,7 @@ The system root directory is `C:\knowledgebase`. The Python stack mirrors the ex
 | TASK-016B | Create `auth/oidc.py` integrating Entra ID (Azure AD) via OIDC authorization-code flow using Authlib: routes `/auth/login`, `/auth/callback`, `/auth/logout`; a `@login_required` decorator that validates the session; and `require_token()` for CLI service-token auth (`KB_CLI_TOKEN`). Config from `KB_OIDC_*`. | ✅ | 2026-06-25 |
 | TASK-016C | Wire CORS in `app.py` (flask-cors) restricting `/api/ask` to `KB_WIKIJS_BASE_URL` (SEC-008). Protect `/api/ask` with `@login_required` OR a valid service token. | ✅ | 2026-06-25 |
 | TASK-017 | Create `surfaces/upload/` — an Entra-authenticated upload page (`GET /upload` form, `POST /upload` handler). Enforce SEC-006 (extension allowlist, `KB_MAX_UPLOAD_MB`, content-type check), save originals to `data/uploads/`, then trigger `ingest/run.py` for the new file. Show ingest status. | ✅ | 2026-06-25 |
-| TASK-018 | Create `C:\knowledgebase\cli.py` with a `kb ask "<question>"` command that calls `retrieval/generator.answer` and prints the answer plus citations, authenticating via `KB_CLI_TOKEN`. Use standard argparse style. | ✅ | 2026-06-25 |
+| TASK-018 | Create `C:\knowledgebase\cli.py` with a `kb ask "<question>"` command that calls `retrieval/generator.answer` and prints the answer plus citations, authenticating via `KB_CLI_TOKEN`. | ✅ | 2026-06-25 |
 | TASK-019 | Create `surfaces/widget/ask-widget.js` — a self-contained embeddable chat widget. Document injecting it via Wiki.js Administration → Theme → custom JS/HTML; it renders a floating chat box on every wiki page and calls `/api/ask` (CORS-allowed origin, SSO session). Renders answer + citation links. | ✅ | 2026-06-25 |
 | TASK-020 | Create `scripts/refresh.py` and a Windows Task Scheduler entry (or `start_ui.bat`-style launcher) that runs `ingest/run.py` on a fixed interval (default hourly) so the vector store tracks Wiki.js edits and new uploads. | ✅ | 2026-06-25 |
 
@@ -136,7 +136,7 @@ The system root directory is `C:\knowledgebase`. The Python stack mirrors the ex
 - **DEP-002**: `anthropic` Python SDK (`>=0.40.0`) and a valid enterprise `ANTHROPIC_API_KEY` with EDP/no-training terms.
 - **DEP-003**: Ollama installed and running on-host, with `KB_EMBED_MODEL` (default `nomic-embed-text`) pulled; `ollama` Python SDK (`>=0.3.0`).
 - **DEP-004**: `chromadb` (`>=0.5.0`) for the persistent vector store.
-- **DEP-005**: `flask`, `requests`, `python-dotenv` (mirrors the tool `requirements.txt`).
+- **DEP-005**: `flask`, `requests`, `python-dotenv`.
 - **DEP-006**: `markdown-it-py` for heading-aware Markdown parsing in the chunker.
 - **DEP-007**: Git CLI available on PATH for `content_mirror/` pulls.
 - **DEP-008**: Entra ID (Azure AD) app registration (client ID/secret, redirect URI, tenant ID) for OIDC SSO (REQ-012).
@@ -196,11 +196,10 @@ The system root directory is `C:\knowledgebase`. The Python stack mirrors the ex
 - **RISK-005**: Model IDs and SDK interfaces evolve. Mitigation: model IDs are env-configurable (REQ-005); SDK versions pinned (TASK-004).
 - **ASSUMPTION-001**: An internal host is available to run Wiki.js + PostgreSQL via Docker, and the org's Anthropic enterprise API access is provisioned. No third-party SaaS or embeddings budget is required.
 - **ASSUMPTION-002**: Engineers will contribute content; an editorial owner curates structure and quality. Without contribution, the knowledge base provides no value regardless of technical correctness.
-- **ASSUMPTION-003**: Initial deployment is single-host on the user's Windows environment, consistent with the the tool project footprint.
+- **ASSUMPTION-003**: Initial deployment is single-host on a Windows environment.
 
 ## 8. Related Specifications / Further Reading
 
-- the tool BackPort Assistance Agent: `C:\the tool\CLAUDE.md` (Python-fetches / LLM-analyzes convention, GUD-001)
 - Wiki.js documentation: https://docs.requarks.io — Git storage module: https://docs.requarks.io/storage/git
 - Anthropic Messages API documentation: https://docs.anthropic.com
 - Ollama embeddings documentation: https://docs.ollama.com
