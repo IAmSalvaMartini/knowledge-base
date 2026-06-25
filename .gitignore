@@ -1,0 +1,50 @@
+# ----------------------------------------------------------------------------
+# Secrets — never commit real credentials. Only .env.example is tracked.
+# ----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+deploy_key*
+
+# ----------------------------------------------------------------------------
+# Internal knowledge content — lives in a SEPARATE PRIVATE repo.
+# content_mirror/ is a local clone of that private repo; never publish it.
+# ----------------------------------------------------------------------------
+content_mirror/
+
+# ----------------------------------------------------------------------------
+# Derived vector store — Chroma embeddings contain the internal document text.
+# Publishing data/ would leak private content. Never commit.
+# ----------------------------------------------------------------------------
+data/
+
+# ----------------------------------------------------------------------------
+# Python
+# ----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ----------------------------------------------------------------------------
+# OS / editor
+# ----------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

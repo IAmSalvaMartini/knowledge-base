@@ -1,0 +1,18 @@
+# gitleaks config — extends the built-in default ruleset.
+# Allowlist below prevents false positives on documented placeholders.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore template placeholders and example values"
+paths = [
+  '''\.env\.example$''',
+  '''README\.md$''',
+]
+regexes = [
+  '''REPLACE_ME''',
+  '''sk-ant-REPLACE_ME''',
+  '''xoxb-xxx.*''',
+  '''your-internal-host''',
+  '''wiki\.internal\.example''',
+]
