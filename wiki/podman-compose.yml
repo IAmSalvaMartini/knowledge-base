@@ -1,0 +1,52 @@
+# Wiki.js + PostgreSQL via Podman Compose.
+# Works with Docker Compose too (drop-in compatible).
+#
+# Usage:
+#   podman-compose up -d
+#   podman-compose down
+#
+# Wiki.js UI: http://localhost:3000  (first run → guided setup wizard)
+# After setup, enable Git storage: Administration → Storage → Git.
+#
+# Persist data lives in named volumes (wikijs_db, wikijs_data).
+# To wipe and start fresh: podman-compose down -v
+
+version: "3.8"
+
+services:
+  db:
+    image: docker.io/library/postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wikijs
+      POSTGRES_USER: wikijs
+      POSTGRES_PASSWORD: ${WIKIJS_DB_PASSWORD:-changeme}
+    volumes:
+      - wikijs_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wikijs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  wikijs:
+    image: docker.io/requarks/wiki:2
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: wikijs
+      DB_USER: wikijs
+      DB_PASS: ${WIKIJS_DB_PASSWORD:-changeme}
+    volumes:
+      - wikijs_data:/wiki/data
+
+volumes:
+  wikijs_db:
+  wikijs_data:
