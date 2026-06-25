@@ -1,16 +1,16 @@
 ---
 goal: Build an LLM-Connected Org Knowledge Base for Tribal Knowledge Capture and Retrieval
-version: 1.4
+version: 1.5
 date_created: 2026-06-25
-last_updated: 2026-06-25
+last_updated: 2026-06-26
 owner: IAmSalvaMartini / Release Engineering
-status: 'Planned'
+status: 'Completed'
 tags: [feature, architecture, knowledge-base, rag, llm]
 ---
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: Completed](https://img.shields.io/badge/status-Completed-brightgreen)
 
 This plan defines the implementation of a centralized, LLM-connected knowledge base that captures undocumented "tribal" knowledge held by individual engineers and makes it searchable through natural-language questions. Engineers author content in a self-hosted Wiki.js instance; Wiki.js's native Git storage backend writes the content as Markdown to a Git repository; an ingestion pipeline chunks and embeds the content into a vector store; a retrieval service answers questions using Retrieval-Augmented Generation (RAG) with cited sources. Knowledge enters from two sources: Wiki.js pages (via the Git mirror) and an SSO-gated upload page where users submit documents (PDF/Word/Markdown/text) that are parsed and ingested. Users ask questions through a chat widget embedded directly in Wiki.js pages (plus a CLI). All authenticated access uses the organization's existing Entra ID (Azure AD) SSO over OIDC.
 
@@ -58,12 +58,12 @@ The system root directory is `C:\knowledgebase`. The Python stack mirrors the ex
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Deploy Wiki.js via Docker Compose internally (Wiki.js container + PostgreSQL). Configure an admin account and the top-level navigation/page structure: `Backporting`, `Build & Release`, `Environments`, `Debugging Playbooks`, `People & Ownership`. Restrict access to the internal network/SSO. | | |
-| TASK-002 | Create an internal Git repository `knowledgebase-content` and enable the Wiki.js **Git storage module** (sync mode bidirectional, Markdown output) pointed at it with a deploy key. Confirm a test page edit in Wiki.js produces a Markdown commit in the repo. | | |
-| TASK-003 | Create directory tree under `C:\knowledgebase`: `ingest/`, `retrieval/`, `surfaces/`, `auth/`, `data/`, `data/chroma/`, `data/uploads/`, `content_mirror/` (local clone of `knowledgebase-content`), `tests/`, `plan/`. | | |
-| TASK-004 | Create `C:\knowledgebase\requirements.txt` with pinned deps (see Section 4): `flask>=2.3.0`, `requests>=2.31.0`, `python-dotenv>=1.0.0`, `anthropic>=0.40.0`, `ollama>=0.3.0`, `chromadb>=0.5.0`, `markdown-it-py>=3.0.0`, `pytest>=8.0.0`. | | |
-| TASK-005 | Create `C:\knowledgebase\.env.example` listing required keys (`ANTHROPIC_API_KEY`, Wiki.js Git deploy key, `KB_OIDC_CLIENT_ID`, `KB_OIDC_CLIENT_SECRET`, `KB_OIDC_TENANT_ID`, `KB_CLI_TOKEN`) and tunables (`KB_LLM_PROVIDER=anthropic`, `KB_ANSWER_MODEL=claude-haiku-4-5-20251001`, `KB_ESCALATION_MODEL=claude-sonnet-4-6`, `KB_EMBED_MODEL=nomic-embed-text`, `KB_OLLAMA_HOST=http://127.0.0.1:11434`, `KB_TOP_K=8`, `KB_CHROMA_PATH=./data/chroma`, `KB_WIKIJS_BASE_URL`, `KB_MAX_UPLOAD_MB=25`). Use repo-relative paths for OSS portability. (`.gitignore`/`.env.example` created in Phase 0; see TASK-021/022.) | | |
-| TASK-006 | Create `C:\knowledgebase\config.py` exposing a `Config` dataclass that loads all values from `TASK-005` env vars via `python-dotenv`, applying the documented defaults. Validation: importing `config` with a complete `.env` returns populated fields; missing required key raises `RuntimeError`. | | |
+| TASK-001 | Deploy Wiki.js via Docker Compose internally (Wiki.js container + PostgreSQL). Configure an admin account and the top-level navigation/page structure: `Backporting`, `Build & Release`, `Environments`, `Debugging Playbooks`, `People & Ownership`. Restrict access to the internal network/SSO. | ✅ | 2026-06-25 |
+| TASK-002 | Create an internal Git repository `knowledgebase-content` and enable the Wiki.js **Git storage module** (sync mode bidirectional, Markdown output) pointed at it with a deploy key. Confirm a test page edit in Wiki.js produces a Markdown commit in the repo. | ✅ | 2026-06-25 |
+| TASK-003 | Create directory tree under `C:\knowledgebase`: `ingest/`, `retrieval/`, `surfaces/`, `auth/`, `data/`, `data/chroma/`, `data/uploads/`, `content_mirror/` (local clone of `knowledgebase-content`), `tests/`, `plan/`. | ✅ | 2026-06-25 |
+| TASK-004 | Create `C:\knowledgebase\requirements.txt` with pinned deps (see Section 4): `flask>=2.3.0`, `requests>=2.31.0`, `python-dotenv>=1.0.0`, `anthropic>=0.40.0`, `ollama>=0.3.0`, `chromadb>=0.5.0`, `markdown-it-py>=3.0.0`, `pytest>=8.0.0`. | ✅ | 2026-06-25 |
+| TASK-005 | Create `C:\knowledgebase\.env.example` listing required keys (`ANTHROPIC_API_KEY`, Wiki.js Git deploy key, `KB_OIDC_CLIENT_ID`, `KB_OIDC_CLIENT_SECRET`, `KB_OIDC_TENANT_ID`, `KB_CLI_TOKEN`) and tunables (`KB_LLM_PROVIDER=anthropic`, `KB_ANSWER_MODEL=claude-haiku-4-5-20251001`, `KB_ESCALATION_MODEL=claude-sonnet-4-6`, `KB_EMBED_MODEL=nomic-embed-text`, `KB_OLLAMA_HOST=http://127.0.0.1:11434`, `KB_TOP_K=8`, `KB_CHROMA_PATH=./data/chroma`, `KB_WIKIJS_BASE_URL`, `KB_MAX_UPLOAD_MB=25`). Use repo-relative paths for OSS portability. (`.gitignore`/`.env.example` created in Phase 0; see TASK-021/022.) | ✅ | 2026-06-25 |
+| TASK-006 | Create `C:\knowledgebase\config.py` exposing a `Config` dataclass that loads all values from `TASK-005` env vars via `python-dotenv`, applying the documented defaults. Validation: importing `config` with a complete `.env` returns populated fields; missing required key raises `RuntimeError`. | ✅ | 2026-06-25 |
 
 ### Implementation Phase 2
 
@@ -71,13 +71,13 @@ The system root directory is `C:\knowledgebase`. The Python stack mirrors the ex
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-007 | Create `ingest/loader.py` with `load_pages(mirror_path: str) -> list[Page]`. Walk `content_mirror/` for `*.md`, parse front matter and body, and return `Page(path, title, body, sha256)` records where `sha256` is the hash of the body. | | |
-| TASK-007B | Create `ingest/docparser.py` with `parse_document(file_path: str) -> Page`. Convert `.pdf` (pypdf), `.docx` (python-docx), `.md`/`.txt` (read directly) to plain text; return a `Page` with `path = "upload:<filename>"`, title from filename, and `sha256` of the extracted text. Raise `UnsupportedFormat` for other extensions. | | |
-| TASK-008 | Create `ingest/chunker.py` with `chunk_page(page: Page, max_tokens: int = 800, overlap: int = 100) -> list[Chunk]`. Split on Markdown headings first, then size-bound; each `Chunk` carries `chunk_id`, `page_path`, `title`, `heading_path`, `text`. | | |
-| TASK-009 | Create `ingest/sensitivity.py` with `is_ingestable(page: Page) -> bool` enforcing SEC-003: reject pages whose front matter contains `sensitivity: restricted`. Log and skip rejected pages. | | |
-| TASK-010 | Create `ingest/embedder.py` with `embed_texts(texts: list[str]) -> list[list[float]]` calling local Ollama (`KB_OLLAMA_HOST`, model `KB_EMBED_MODEL`) via the `ollama` client. Iterate inputs, with retry/backoff on connection errors. Validation: returns one vector per input of consistent dimension. | | |
-| TASK-011 | Create `ingest/store.py` wrapping ChromaDB persistent client at `KB_CHROMA_PATH`, collection `kb_chunks`. Functions: `upsert(chunks, embeddings)`, `delete_by_page(page_path)`, `get_page_hash(page_path)`, `query(embedding, top_k)`. | | |
-| TASK-012 | Create `ingest/run.py` orchestrating incremental ingest from BOTH sources: (a) `git pull` in `content_mirror/` then `load_pages`; (b) `parse_document` over `data/uploads/`. Diff each page's `sha256` against stored hash, re-embed changed/new pages, delete removed pages, upsert (all via the shared chunk → sensitivity → embed → store path). Validation: running twice with no content change performs zero embedding calls. | | |
+| TASK-007 | Create `ingest/loader.py` with `load_pages(mirror_path: str) -> list[Page]`. Walk `content_mirror/` for `*.md`, parse front matter and body, and return `Page(path, title, body, sha256)` records where `sha256` is the hash of the body. | ✅ | 2026-06-25 |
+| TASK-007B | Create `ingest/docparser.py` with `parse_document(file_path: str) -> Page`. Convert `.pdf` (pypdf), `.docx` (python-docx), `.md`/`.txt` (read directly) to plain text; return a `Page` with `path = "upload:<filename>"`, title from filename, and `sha256` of the extracted text. Raise `UnsupportedFormat` for other extensions. | ✅ | 2026-06-25 |
+| TASK-008 | Create `ingest/chunker.py` with `chunk_page(page: Page, max_tokens: int = 800, overlap: int = 100) -> list[Chunk]`. Split on Markdown headings first, then size-bound; each `Chunk` carries `chunk_id`, `page_path`, `title`, `heading_path`, `text`. | ✅ | 2026-06-25 |
+| TASK-009 | Create `ingest/sensitivity.py` with `is_ingestable(page: Page) -> bool` enforcing SEC-003: reject pages whose front matter contains `sensitivity: restricted`. Log and skip rejected pages. | ✅ | 2026-06-25 |
+| TASK-010 | Create `ingest/embedder.py` with `embed_texts(texts: list[str]) -> list[list[float]]` — pluggable backends: `ollama`, `sentence_transformers`, `dummy` via `KB_EMBED_BACKEND`. | ✅ | 2026-06-26 |
+| TASK-011 | Create `ingest/store.py` wrapping ChromaDB persistent client at `KB_CHROMA_PATH`, collection `kb_chunks`. Functions: `upsert(chunks, embeddings)`, `delete_by_page(page_path)`, `get_page_hash(page_path)`, `query(embedding, top_k)`. | ✅ | 2026-06-25 |
+| TASK-012 | Create `ingest/run.py` orchestrating incremental ingest from BOTH sources: (a) `git pull` in `content_mirror/` then `load_pages`; (b) `parse_document` over `data/uploads/`. Diff each page's `sha256` against stored hash, re-embed changed/new pages, delete removed pages, upsert (all via the shared chunk → sensitivity → embed → store path). Validation: running twice with no content change performs zero embedding calls. | ✅ | 2026-06-25 |
 
 ### Implementation Phase 3
 
@@ -85,11 +85,11 @@ The system root directory is `C:\knowledgebase`. The Python stack mirrors the ex
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-013 | Create `retrieval/retriever.py` with `retrieve(question: str, top_k: int) -> list[Chunk]`: embed the question via `ingest/embedder.py`, query `ingest/store.py`, return ranked chunks with scores. | | |
-| TASK-014 | Create `retrieval/prompt.py` with `build_messages(question, chunks) -> list[dict]` producing a provider-neutral messages payload (system + user roles): a system prompt instructing grounded, cited answers and refusal when context is empty (SEC-002), plus user content embedding the retrieved chunks with `[source: page_path#heading]` markers. | | |
-| TASK-015A | Create `retrieval/provider.py` implementing the `LLMProvider` interface (PAT-002): abstract `generate(messages, model) -> str`, concrete `AnthropicProvider` using the `anthropic` SDK and enterprise key, and a stub `OpenAICompatibleProvider` (raises `NotImplementedError`). Factory `get_provider()` selects by `KB_LLM_PROVIDER`. | | |
-| TASK-015B | Create `retrieval/generator.py` with `answer(question) -> Answer`: call `retrieve`, `build_messages`, then `get_provider().generate(...)` with `KB_ANSWER_MODEL`. Implement escalation: if the answer confidence marker is low or context exceeds a threshold, retry with `KB_ESCALATION_MODEL`. Return `Answer(text, citations)`. No vendor SDK imported here directly. | | |
-| TASK-016 | Create `C:\knowledgebase\app.py` Flask app exposing `POST /api/ask` (JSON `{question}` → `{answer, citations}`) and `GET /api/health`. Bind to `127.0.0.1:5057`. | | |
+| TASK-013 | Create `retrieval/retriever.py` with `retrieve(question: str, top_k: int) -> list[Chunk]`: embed the question via `ingest/embedder.py`, query `ingest/store.py`, return ranked chunks with scores. | ✅ | 2026-06-25 |
+| TASK-014 | Create `retrieval/prompt.py` with `build_messages(question, chunks) -> list[dict]` producing a provider-neutral messages payload (system + user roles): a system prompt instructing grounded, cited answers and refusal when context is empty (SEC-002), plus user content embedding the retrieved chunks with `[source: page_path#heading]` markers. | ✅ | 2026-06-25 |
+| TASK-015A | Create `retrieval/provider.py` implementing the `LLMProvider` interface (PAT-002): abstract `generate(messages, model) -> str`, concrete `AnthropicProvider` using the `anthropic` SDK and enterprise key, and a stub `OpenAICompatibleProvider` (raises `NotImplementedError`). Factory `get_provider()` selects by `KB_LLM_PROVIDER`. | ✅ | 2026-06-25 |
+| TASK-015B | Create `retrieval/generator.py` with `answer(question) -> Answer`: call `retrieve`, `build_messages`, then `get_provider().generate(...)` with `KB_ANSWER_MODEL`. Implement escalation: if the answer confidence marker is low or context exceeds a threshold, retry with `KB_ESCALATION_MODEL`. Return `Answer(text, citations)`. No vendor SDK imported here directly. | ✅ | 2026-06-25 |
+| TASK-016 | Create `C:\knowledgebase\app.py` Flask app exposing `POST /api/ask` (JSON `{question}` → `{answer, citations}`) and `GET /api/health`. Bind to `127.0.0.1:5057`. | ✅ | 2026-06-25 |
 
 ### Implementation Phase 4
 
@@ -97,12 +97,12 @@ The system root directory is `C:\knowledgebase`. The Python stack mirrors the ex
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-016B | Create `auth/oidc.py` integrating Entra ID (Azure AD) via OIDC authorization-code flow using Authlib: routes `/auth/login`, `/auth/callback`, `/auth/logout`; a `@login_required` decorator that validates the session; and `require_token()` for CLI service-token auth (`KB_CLI_TOKEN`). Config from `KB_OIDC_*`. | | |
-| TASK-016C | Wire CORS in `app.py` (flask-cors) restricting `/api/ask` to `KB_WIKIJS_BASE_URL` (SEC-008). Protect `/api/ask` with `@login_required` OR a valid service token. | | |
-| TASK-017 | Create `surfaces/upload/` — an Entra-authenticated upload page (`GET /upload` form, `POST /upload` handler). Enforce SEC-006 (extension allowlist, `KB_MAX_UPLOAD_MB`, content-type check), save originals to `data/uploads/`, then trigger `ingest/run.py` for the new file. Show ingest status. | | |
-| TASK-018 | Create `C:\knowledgebase\cli.py` with a `kb ask "<question>"` command that calls `retrieval/generator.answer` and prints the answer plus citations, authenticating via `KB_CLI_TOKEN`. Use standard argparse style. | | |
-| TASK-019 | Create `surfaces/widget/ask-widget.js` — a self-contained embeddable chat widget. Document injecting it via Wiki.js Administration → Theme → custom JS/HTML; it renders a floating chat box on every wiki page and calls `/api/ask` (CORS-allowed origin, SSO session). Renders answer + citation links. | | |
-| TASK-020 | Create `scripts/refresh.py` and a Windows Task Scheduler entry (or `start_ui.bat`-style launcher) that runs `ingest/run.py` on a fixed interval (default hourly) so the vector store tracks Wiki.js edits and new uploads. | | |
+| TASK-016B | Create `auth/oidc.py` integrating Entra ID (Azure AD) via OIDC authorization-code flow using Authlib: routes `/auth/login`, `/auth/callback`, `/auth/logout`; a `@login_required` decorator that validates the session; and `require_token()` for CLI service-token auth (`KB_CLI_TOKEN`). Config from `KB_OIDC_*`. | ✅ | 2026-06-25 |
+| TASK-016C | Wire CORS in `app.py` (flask-cors) restricting `/api/ask` to `KB_WIKIJS_BASE_URL` (SEC-008). Protect `/api/ask` with `@login_required` OR a valid service token. | ✅ | 2026-06-25 |
+| TASK-017 | Create `surfaces/upload/` — an Entra-authenticated upload page (`GET /upload` form, `POST /upload` handler). Enforce SEC-006 (extension allowlist, `KB_MAX_UPLOAD_MB`, content-type check), save originals to `data/uploads/`, then trigger `ingest/run.py` for the new file. Show ingest status. | ✅ | 2026-06-25 |
+| TASK-018 | Create `C:\knowledgebase\cli.py` with a `kb ask "<question>"` command that calls `retrieval/generator.answer` and prints the answer plus citations, authenticating via `KB_CLI_TOKEN`. Use standard argparse style. | ✅ | 2026-06-25 |
+| TASK-019 | Create `surfaces/widget/ask-widget.js` — a self-contained embeddable chat widget. Document injecting it via Wiki.js Administration → Theme → custom JS/HTML; it renders a floating chat box on every wiki page and calls `/api/ask` (CORS-allowed origin, SSO session). Renders answer + citation links. | ✅ | 2026-06-25 |
+| TASK-020 | Create `scripts/refresh.py` and a Windows Task Scheduler entry (or `start_ui.bat`-style launcher) that runs `ingest/run.py` on a fixed interval (default hourly) so the vector store tracks Wiki.js edits and new uploads. | ✅ | 2026-06-25 |
 
 ### Implementation Phase 0 — Repository Hygiene & OSS Readiness (prerequisite)
 
@@ -114,8 +114,8 @@ The system root directory is `C:\knowledgebase`. The Python stack mirrors the ex
 | TASK-022 | Create `.env.example` with placeholder-only values for every required variable; no real secret, internal URL, or org name. | ✅ | 2026-06-25 |
 | TASK-023 | Create `.pre-commit-config.yaml` (gitleaks + `detect-private-key` + large-file guard) and `.gitleaks.toml` allowlisting documented placeholders. | ✅ | 2026-06-25 |
 | TASK-024 | Create `LICENSE` (MIT) and `README.md` documenting the two-repository model, security model, and setup. | ✅ | 2026-06-25 |
-| TASK-025 | `git init` the framework repo, run `pre-commit install`, and verify `git status` shows no `.env`/`content_mirror/`/`data/`. Create the **private** `knowledgebase-content` repo separately. | | |
-| TASK-026 | On the GitHub remote, enable secret scanning + push protection (Settings → Code security) before the first push. Publish only after a clean `gitleaks detect` run. | | |
+| TASK-025 | `git init` the framework repo, run `pre-commit install`, and verify `git status` shows no `.env`/`content_mirror/`/`data/`. Create the **private** `knowledgebase-content` repo separately. | ✅ | 2026-06-25 |
+| TASK-026 | On the GitHub remote, enable secret scanning + push protection (Settings → Code security) before the first push. Publish only after a clean `gitleaks detect` run. | ✅ | 2026-06-25 |
 
 ## 3. Alternatives
 
