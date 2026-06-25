@@ -33,6 +33,7 @@ class Config:
     openai_api_key: str
 
     # Embeddings
+    embed_backend: str   # ollama | sentence_transformers | dummy
     embed_model: str
     ollama_host: str
 
@@ -72,6 +73,7 @@ def load_config() -> Config:
         openai_base_url=_get("KB_OPENAI_BASE_URL", ""),
         openai_api_key=_get("KB_OPENAI_API_KEY", ""),
 
+        embed_backend=_get("KB_EMBED_BACKEND", "ollama"),
         embed_model=_get("KB_EMBED_MODEL", "nomic-embed-text"),
         ollama_host=_get("KB_OLLAMA_HOST", "http://127.0.0.1:11434"),
 
