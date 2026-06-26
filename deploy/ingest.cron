@@ -1,0 +1,1 @@
+0 * * * * root cd /app && python -m ingest.run >> /var/log/kb-ingest.log 2>&1

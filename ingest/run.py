@@ -33,12 +33,16 @@ def _ingest_page(page, *, force: bool = False) -> bool:
     return True
 
 
-def _pull_mirror(mirror_path: Path) -> None:
+def _pull_mirror(mirror_path: Path, repo_url: str) -> None:
     if (mirror_path / ".git").exists():
         logger.info("Pulling content mirror: %s", mirror_path)
         subprocess.run(["git", "pull", "--ff-only"], cwd=str(mirror_path), check=True)
+    elif repo_url:
+        logger.info("Cloning content mirror from %s", repo_url)
+        mirror_path.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["git", "clone", repo_url, str(mirror_path)], check=True)
     else:
-        logger.warning("content_mirror not a git repo — skipping pull: %s", mirror_path)
+        logger.warning("content_mirror not found and KB_CONTENT_REPO_URL not set — skipping")
 
 
 def _find_deleted_pages(current_paths: set[str]) -> list[str]:
@@ -63,8 +67,8 @@ def run(force: bool = False) -> dict:
     # --- Source 1: Wiki.js git mirror ---
     mirror_path = cfg.content_mirror_path
     wiki_pages = []
+    _pull_mirror(mirror_path, cfg.content_repo_url)
     if mirror_path.exists():
-        _pull_mirror(mirror_path)
         wiki_pages = loader.load_pages(str(mirror_path))
     else:
         logger.warning("content_mirror not found at %s — skipping wiki source", mirror_path)
